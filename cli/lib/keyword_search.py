@@ -1,4 +1,4 @@
-from .search_utils import load_movies
+from .search_utils import load_movies, load_stop_words
 import string
 
 
@@ -14,11 +14,20 @@ def tokenization(text):
     return tokens
 
 def has_matching_token(query_tokens, movie_tokens):
+    query_tokens = remove_stop_words(query_tokens)
+    movie_tokens = remove_stop_words(movie_tokens)
+
     for q_tok in query_tokens:
         for m_tok in movie_tokens:
             if q_tok in m_tok:
                 return True
     return False
+
+def remove_stop_words(tokens):
+    stop_words = load_stop_words()
+
+    tokens = [token for token in tokens if token not in stop_words]
+    return tokens
 
 def search_command(query, n_results):
     data = load_movies()
