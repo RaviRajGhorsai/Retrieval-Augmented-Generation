@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from lib.keyword_search import search_command
+from lib.keyword_search import search_command, build_command 
 
 
 def main() -> None:
@@ -10,7 +10,8 @@ def main() -> None:
 
     search_parser = subparsers.add_parser("search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
-
+    
+    build_parser = subparsers.add_parser("build", help="build and save for BM25 search")
     args = parser.parse_args()
 
     match args.command:
@@ -21,6 +22,9 @@ def main() -> None:
             results = search_command(args.query, 5)
             for i, result in enumerate(results):
                 print(f"{i} {result['title']}")
+
+        case "build":
+            build_command()
 
         case _:
             parser.print_help()
