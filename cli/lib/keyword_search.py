@@ -10,18 +10,27 @@ stemmer = PorterStemmer()
 
 class InvertedIndex:
     def __init__(self) -> None:
-        self.index = defaultdict(set)
+        self.index = defaultdict(set)  # help: {1, 2, 10, 34}
         self.docmap = {}  # maps document ID to document
+
         self.index_path = CACHE_PATH / "index.pkl"
         self.docmap_path = CACHE_PATH / "docmap.pkl"
 
     def __add_document(self, doc_id, text):
+        # converts text into tokens and add correcponding doc_id to token
+        # eg. "help" token is mapped to corresponding doc_ids
+        # help: {1, 2, 10, 34}
+        # it becomes easy to search in which document does help keyword exists on
+
         tokens = tokenization(text)
 
         for token in set(tokens):
             self.index[token].add(doc_id)
 
     def get_documents(self, term):
+        # returns sorted list of doc_ids that contains that token
+        # {1, 2, 10, 34}
+
         return sorted(list(self.index[term]))
 
     def build(self):
@@ -30,12 +39,17 @@ class InvertedIndex:
 
         for movie in movies:
             doc_id = movie["id"]
+            
+            # while searching for movies we search both title and description
+
             text = f"{movie['title']} {movie['description']}"
 
             self.__add_document(doc_id, text)
             self.docmap[doc_id] = movie
 
     def save(self):
+        # saves the index and docmap cache to an file
+
         os.makedirs(CACHE_PATH, exist_ok=True)
         with open(self.index_path, "wb") as f:
             pickle.dump(self.index, f)
@@ -43,14 +57,19 @@ class InvertedIndex:
         with open(self.docmap_path, "wb") as f:
             pickle.dump(self.docmap, f)
 
+    def load(self):
+        with open(self.index_path, "rb") as f:
+            self.index = pickle.load(f)
+
+        with open(self.docmap_path, "rb") as f:
+            self.docmap = pickle.load(f)
+
 
 def build_command():
     idx = InvertedIndex()
     idx.build()
     idx.save()
-    docs = idx.get_documents("merida")
 
-    print(f"First document for token 'merida' = {docs[0]}")
 
 def clean_text(text):
     text = text.lower()
@@ -59,8 +78,9 @@ def clean_text(text):
     return text
 
 
-# Convert search data and query intoword based tokens
 def tokenization(text):
+    # Convert search data and query intoword based tokens
+
     text = clean_text(text)
     tokens = [tok for tok in text.split() if tok]
 
@@ -77,8 +97,9 @@ def tokenization(text):
     return stemmed_tokens
 
 
-# remove stop words like a, the, etc. that may not have specific meaning to any search
 def remove_stop_words(tokens):
+    # remove stop words like a, the, etc. that may not have specific meaning to any search
+
     stop_words = load_stop_words()
 
     tokens = [token for token in tokens if token not in stop_words]
@@ -94,17 +115,27 @@ def has_matching_token(query_tokens, movie_tokens):
     return False
 
 
-def search_command(query, n_results):
-    data = load_movies()
-    result_movie = []
+def search_command(query, n_results=5):
+    idx = InvertedIndex()
+
+    idx.load()
+
+    seen, result = set(), []
 
     query_tokens = tokenization(query)
 
-    for movie in data:
-        movie_tokens = tokenization(movie["title"])
+    for token in query_tokens:
+        matching_doc_ids = idx.get_documents(token)
 
-        if has_matching_token(query_tokens, movie_tokens):
-            result_movie.append(movie)
-        if len(result_movie) == n_results:
-            break
-    return result_movie
+        for matching_doc_id in matching_doc_ids:
+            if matching_doc_id in seen:
+                continue
+
+            seen.add(matching_doc_id)
+            matching_doc = idx.docmap[matching_doc_id]
+            result.append(matching_doc)
+
+            if len(result) >= n_results:
+                return result
+
+    return result
