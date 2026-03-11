@@ -148,6 +148,17 @@ def has_matching_token(query_tokens, movie_tokens):
                 return True
     return False
 
+def tf_idf_command(doc_id, term):
+    idx = InvertedIndex()
+
+    idx.load()
+
+    tf = idx.get_tf(doc_id, term)
+    idf = idx.get_idf(term)
+
+    tf_idf = tf * idf
+
+    print(f"TF-IDF score of '{term}' in document '{doc_id}': {tf_idf:.2f}")
 
 def idf_command(term):
     idx = InvertedIndex()
