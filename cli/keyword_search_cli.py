@@ -12,6 +12,8 @@ from lib.keyword_search import (
 )
 
 BM25_K1 = 1.5
+BM25_B = 0.75
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
@@ -52,6 +54,9 @@ def main() -> None:
     bm25_tf_parser.add_argument(
         "k1", type=float, nargs="?", default=BM25_K1, help="Tunable BM25 K1 parameter"
     )
+    bm25_tf_parser.add_argument(
+        "b", type=float, nargs="?", default=BM25_B, help="Tunable BM25 b parameter"
+    )
 
     args = parser.parse_args()
 
@@ -80,7 +85,7 @@ def main() -> None:
             bm25_idf_command(args.term)
 
         case "bm25tf":
-            bm25_tf_command(args.doc_id, args.term, args.k1)
+            bm25_tf_command(args.doc_id, args.term, args.k1, args.b)
 
         case _:
             parser.print_help()
