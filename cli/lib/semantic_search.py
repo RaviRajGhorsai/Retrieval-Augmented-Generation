@@ -24,9 +24,14 @@ class SemanticSearch:
         similarity_scores = []
 
         for embedding, doc in zip(self.embeddings, self.documents):
+            # zip() combines two or more iterables (lists, arrays, etc.) element
+            # by element into pairs (or tuples).
+            # numbers = [1, 2, 3]        ---> 1 a
+            # letters = ['a', 'b', 'c']  ---> 2 b
+
             _similarity = cosine_similarity(query_embedding, embedding)
-            similarity_scores.append((_similarity, doc)) 
-        
+            similarity_scores.append((_similarity, doc))
+
         similarity_scores.sort(key=lambda x: x[0], reverse=True)
 
         scores = similarity_scores[:limit]
@@ -80,6 +85,26 @@ class SemanticSearch:
 
         return self.build_embedding(documents)
 
+def fixed_size_chunking(text, chunk_size):
+    text = text.split()
+
+    chunks = []
+
+    for i in range(0, len(text), chunk_size):
+        chunk = text[i : i + chunk_size]
+        chunks.append(" ".join(chunk))
+    
+    return chunks
+ 
+def chunk_command(text, chunk_size):
+    chunks = fixed_size_chunking(text, chunk_size)
+
+    print(f"chunking {len(text)} characters\n")
+    for i, chunk in enumerate(chunks):
+        print(f"{i}. {chunk}\n")
+
+    
+
 def search_command(query, limit):
     ss = SemanticSearch()
 
@@ -90,7 +115,10 @@ def search_command(query, limit):
     res = ss.search(query, limit)
 
     for i, r in enumerate(res):
-        print(f"{i}. {r["title"]} (score: {r["score"]:.4f})\n{r["description"][:100]}\n\n")
+        print(
+            f"{i}. {r['title']} (score: {r['score']:.4f})\n{r['description'][:100]}\n\n"
+        )
+
 
 def cosine_similarity(vec1, vec2):
     dot_product = np.dot(vec1, vec2)
