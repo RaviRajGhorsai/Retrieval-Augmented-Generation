@@ -85,25 +85,39 @@ class SemanticSearch:
 
         return self.build_embedding(documents)
 
-def fixed_size_chunking(text, chunk_size):
+
+def fixed_size_chunking(text, chunk_size, overlap):
     text = text.split()
 
     chunks = []
 
-    for i in range(0, len(text), chunk_size):
+    if overlap >= chunk_size:
+        raise ValueError("Overlap size cannot be greater than chunk size")
+
+    i = 0
+    while i < len(text):
         chunk = text[i : i + chunk_size]
+
+        if not chunk:
+            break
+
+        if len(chunk) <= overlap:
+            break
+
         chunks.append(" ".join(chunk))
-    
+
+        i += chunk_size - overlap
+
     return chunks
- 
-def chunk_command(text, chunk_size):
-    chunks = fixed_size_chunking(text, chunk_size)
+
+
+def chunk_command(text, chunk_size, overlap=0):
+    chunks = fixed_size_chunking(text, chunk_size, overlap)
 
     print(f"chunking {len(text)} characters\n")
     for i, chunk in enumerate(chunks):
         print(f"{i}. {chunk}\n")
 
-    
 
 def search_command(query, limit):
     ss = SemanticSearch()
