@@ -1,3 +1,4 @@
+from nltk import print_string
 from .search_utils import load_movies, load_stop_words, CACHE_PATH
 from nltk.stem import PorterStemmer
 import string
@@ -104,9 +105,45 @@ class InvertedIndex:
         length_norm = 1 - b + (b * (doc_len / avg_doc_len))
         tf_component = (tf * (k1 + 1)) / (tf + k1 * length_norm)
 
-        print(f"length norm {length_norm}\n\ntf component {tf_component}")
-
         return tf_component
+
+    def get_bm25_score(self, doc_id, term):
+
+        bm25_tf = self.get_bm25_tf(doc_id, term)
+        bm25_idf = self.get_bm25_idf(term)
+
+        bm25_score = bm25_tf * bm25_idf
+
+        return bm25_score
+
+    def bm25_search(self, query, limit=5):
+        tokens = tokenization(query)
+
+        scores = defaultdict(float)
+
+        for token in tokens:
+            if token not in self.index:
+                continue
+
+            for doc_id in self.index[token]:
+                scores[doc_id] += self.get_bm25_score(doc_id, token)
+
+        ranked_docs = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        results = ranked_docs[:limit]
+        
+        format_results = [] 
+        for doc_id, score in results:
+            title = self.docmap[doc_id]["title"]
+            format_results.append(
+                        {
+                            "doc_id": doc_id,
+                            "title": title,
+                            "score": score,
+
+                            }
+                    )
+
+        return format_results
 
     def build(self):
 
@@ -204,6 +241,16 @@ def has_matching_token(query_tokens, movie_tokens):
                 return True
     return False
 
+
+def bm25search_command(query, limit):
+    idx = InvertedIndex()
+
+    idx.load()
+ 
+    res = idx.bm25_search(query, limit)
+
+    for id, r in enumerate(res):
+        print(f"{id}. ({r["doc_id"]}) {r["title"]} - Score {r["score"]:.2f}")
 
 def bm25_tf_command(doc_id, term, k1, b):
     idx = InvertedIndex()
