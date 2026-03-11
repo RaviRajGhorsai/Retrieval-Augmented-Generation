@@ -1,4 +1,3 @@
-from nltk import print_string
 from .search_utils import load_movies, load_stop_words, CACHE_PATH
 from nltk.stem import PorterStemmer
 import string
