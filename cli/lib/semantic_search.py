@@ -13,6 +13,37 @@ class SemanticSearch:
 
         self.embedding_path = CACHE_PATH / "movie_embedding.npy"
 
+    def search(self, query, limit):
+        if self.embeddings is None:
+            raise ValueError(
+                "No embeddings loaded. Call `load_or_create_embeddings` first."
+            )
+
+        query_embedding = self.generate_embedding(query)
+
+        similarity_scores = []
+
+        for embedding, doc in zip(self.embeddings, self.documents):
+            _similarity = cosine_similarity(query_embedding, embedding)
+            similarity_scores.append((_similarity, doc)) 
+        
+        similarity_scores.sort(key=lambda x: x[0], reverse=True)
+
+        scores = similarity_scores[:limit]
+
+        format_results = []
+        for score, document in scores:
+            format_results.append(
+                {
+                    "doc_id": document["id"],
+                    "title": document["title"],
+                    "score": score,
+                    "description": document["description"],
+                }
+            )
+
+        return format_results
+
     def generate_embedding(self, text):
         if not text:
             raise ValueError("Text cann be empty")
@@ -48,6 +79,28 @@ class SemanticSearch:
                 return self.embeddings
 
         return self.build_embedding(documents)
+
+def search_command(query, limit):
+    ss = SemanticSearch()
+
+    movies = load_movies()
+
+    ss.load_or_create_embeding(movies)
+
+    res = ss.search(query, limit)
+
+    for i, r in enumerate(res):
+        print(f"{i}. {r["title"]} (score: {r["score"]:.4f})\n{r["description"][:100]}\n\n")
+
+def cosine_similarity(vec1, vec2):
+    dot_product = np.dot(vec1, vec2)
+    norm1 = np.linalg.norm(vec1)  # magnitude of vec1
+    norm2 = np.linalg.norm(vec2)
+
+    if norm1 == 0 or norm2 == 0:
+        return 0.0
+
+    return dot_product / (norm1 * norm2)
 
 
 def embed_query_text(query):
