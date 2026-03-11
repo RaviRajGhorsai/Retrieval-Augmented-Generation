@@ -3,6 +3,7 @@ from nltk.stem import PorterStemmer
 import string
 import os
 import pickle
+import math
 from collections import defaultdict, Counter
 
 stemmer = PorterStemmer()
@@ -35,9 +36,8 @@ class InvertedIndex:
         tokens = tokenization(text)
 
         for token in set(tokens):
-            
             self.index[token].add(doc_id)
-        
+
         self.term_frequencies[doc_id].update(tokens)
 
     def get_documents(self, term):
@@ -48,11 +48,24 @@ class InvertedIndex:
 
     def get_tf(self, doc_id, term):
         token = tokenization(term)
-        
+
         if len(token) != 1:
             raise ValueError("Can only have one token")
-        
+
         return self.term_frequencies[doc_id][token[0]]
+
+    def get_idf(self, term):
+        token = tokenization(term)
+
+        if len(token) != 1:
+            raise ValueError("Can only have one token")
+
+        token = token[0]
+
+        total_doc_count = len(self.docmap)
+        term_match_doc_count = len(self.index[token])
+
+        return math.log((total_doc_count + 1) / (term_match_doc_count + 1))
 
     def build(self):
 
@@ -90,18 +103,6 @@ class InvertedIndex:
 
         with open(self.term_frequencies_path, "rb") as f:
             self.term_frequencies = pickle.load(f)
-
-def tf_command(doc_id, term):
-    idx = InvertedIndex()
-    
-    idx.load()
-
-    print(idx.get_tf(doc_id, term))
-
-def build_command():
-    idx = InvertedIndex()
-    idx.build()
-    idx.save()
 
 
 def clean_text(text):
@@ -146,6 +147,30 @@ def has_matching_token(query_tokens, movie_tokens):
             if q_tok in m_tok:
                 return True
     return False
+
+
+def idf_command(term):
+    idx = InvertedIndex()
+
+    idx.load()
+
+    idf = idx.get_idf(term)
+
+    print(f"Inverse document frequency of '{term}': {idf:.2f}")
+
+
+def tf_command(doc_id, term):
+    idx = InvertedIndex()
+
+    idx.load()
+
+    print(idx.get_tf(doc_id, term))
+
+
+def build_command():
+    idx = InvertedIndex()
+    idx.build()
+    idx.save()
 
 
 def search_command(query, n_results=5):

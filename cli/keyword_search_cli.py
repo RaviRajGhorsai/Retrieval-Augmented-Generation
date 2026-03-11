@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from lib.keyword_search import search_command, build_command, tf_command 
+from lib.keyword_search import search_command, build_command, tf_command, idf_command 
 
 
 def main() -> None:
@@ -11,12 +11,15 @@ def main() -> None:
     search_parser = subparsers.add_parser("search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
     
-    build_parser = subparsers.add_parser("build", help="build and save for BM25 search")
+    build_parser = subparsers.add_parser("build", help="build cache and save for BM25 search")
 
-    tf_parser = subparsers.add_parser("tf", help="Search movies using BM25")
+    tf_parser = subparsers.add_parser("tf", help="Calculate Term Frequency")
     tf_parser.add_argument("doc_id", type=int, help="Document ID for to check")
     tf_parser.add_argument("term", type=str, help="Search term to find counts for")
-
+    
+    idf_parser = subparsers.add_parser("idf", help="Calculate Inverse Document Frequency")
+    idf_parser.add_argument("term", type=str, help="Search term to find counts for")
+    
     args = parser.parse_args()
 
     match args.command:
@@ -33,6 +36,9 @@ def main() -> None:
 
         case "tf":
             tf_command(args.doc_id, args.term)
+
+        case "idf":
+            idf_command(args.term)
 
         case _:
             parser.print_help()
