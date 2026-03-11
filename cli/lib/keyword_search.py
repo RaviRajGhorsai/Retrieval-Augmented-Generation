@@ -7,6 +7,7 @@ import math
 from collections import defaultdict, Counter
 
 stemmer = PorterStemmer()
+BM25_K1 = 1.5
 
 
 class InvertedIndex:
@@ -72,12 +73,19 @@ class InvertedIndex:
 
         if len(token) != 1:
             raise ValueError("Can only have one token")
-    
+
         token = token[0]
         N = len(self.docmap)
         df = len(self.index[token])
-        
+
         return math.log((N - df + 0.5) / (df + 0.5) + 1)
+
+    def get_bm25_tf(self, doc_id, term, k1=BM25_K1):
+        tf = self.get_tf(doc_id, term)
+
+        bm25_tf = (tf * (k1 + 1)) / (tf + k1)
+
+        return bm25_tf
 
     def build(self):
 
@@ -160,7 +168,16 @@ def has_matching_token(query_tokens, movie_tokens):
                 return True
     return False
 
-def bm_idf_command(term):
+def bm25_tf_command(doc_id, term, k1=1.5):
+    idx = InvertedIndex()
+
+    idx.load()
+
+    bm25_tf = idx.get_bm25_tf(doc_id, term)
+
+    print(f"BM25 TF score of '{term}' in document '{doc_id}': {bm25_tf:.2f}")
+
+def bm25_idf_command(term):
     idx = InvertedIndex()
 
     idx.load()
@@ -168,6 +185,7 @@ def bm_idf_command(term):
     bm25_idf = idx.get_bm_idf(term)
 
     print(f"BM25 IDF score of '{term}': {bm25_idf:.2f}")
+
 
 def tf_idf_command(doc_id, term):
     idx = InvertedIndex()
@@ -180,6 +198,7 @@ def tf_idf_command(doc_id, term):
     tf_idf = tf * idf
 
     print(f"TF-IDF score of '{term}' in document '{doc_id}': {tf_idf:.2f}")
+
 
 def idf_command(term):
     idx = InvertedIndex()
