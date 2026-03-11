@@ -67,6 +67,18 @@ class InvertedIndex:
 
         return math.log((total_doc_count + 1) / (term_match_doc_count + 1))
 
+    def get_bm_idf(self, term):
+        token = tokenization(term)
+
+        if len(token) != 1:
+            raise ValueError("Can only have one token")
+    
+        token = token[0]
+        N = len(self.docmap)
+        df = len(self.index[token])
+        
+        return math.log((N - df + 0.5) / (df + 0.5) + 1)
+
     def build(self):
 
         movies = load_movies()
@@ -147,6 +159,15 @@ def has_matching_token(query_tokens, movie_tokens):
             if q_tok in m_tok:
                 return True
     return False
+
+def bm_idf_command(term):
+    idx = InvertedIndex()
+
+    idx.load()
+
+    bm25_idf = idx.get_bm_idf(term)
+
+    print(f"BM25 IDF score of '{term}': {bm25_idf:.2f}")
 
 def tf_idf_command(doc_id, term):
     idx = InvertedIndex()

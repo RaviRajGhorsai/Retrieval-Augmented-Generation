@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from lib.keyword_search import search_command, build_command, tf_command, idf_command, tf_idf_command 
+from lib.keyword_search import search_command, build_command, tf_command, idf_command, tf_idf_command, bm_idf_command 
 
 
 def main() -> None:
@@ -23,6 +23,9 @@ def main() -> None:
     tf_idf_parser = subparsers.add_parser("tfidf", help="Calculate TF-IDF")
     tf_idf_parser.add_argument("doc_id", type=int, help="Document ID for to check")
     tf_idf_parser.add_argument("term", type=str, help="Search term to find counts for")
+
+    bm25_idf_parser = subparsers.add_parser("bm25idf", help="Get BM25 IDF score for a given term")
+    bm25_idf_parser.add_argument("term", type=str, help="Term to get BM25 IDF score for")
     
     args = parser.parse_args()
 
@@ -46,7 +49,9 @@ def main() -> None:
 
         case "tfidf":
             tf_idf_command(args.doc_id, args.term)
-
+        
+        case "bm25idf":
+            bm_idf_command(args.term)
         case _:
             parser.print_help()
 
