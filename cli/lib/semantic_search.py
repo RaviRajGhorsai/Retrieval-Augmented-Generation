@@ -1,15 +1,17 @@
+from collections import defaultdict
 from sentence_transformers import SentenceTransformer
 from .search_utils import CACHE_PATH, load_movies
 import numpy as np
 import os
 import re
 import json
-import numpy as np
+
+SCORE_PRECISION = 4
 
 
 class SemanticSearch:
-    def __init__(self, model_name):
-        self.model = SentenceTransformer(model_name)
+    def __init__(self):
+        self.model = SentenceTransformer("all-MiniLM-L6-v2")
         self.embeddings = None
         self.documents = None
         self.document_map = {}
@@ -54,7 +56,7 @@ class SemanticSearch:
 
     def generate_embedding(self, text):
         if not text:
-            raise ValueError("Text cann be empty")
+            raise ValueError("Text cannot be empty")
 
         res = self.model.encode([text])
 
@@ -90,13 +92,68 @@ class SemanticSearch:
 
 
 class ChunkedSemanticSearch(SemanticSearch):
-    def __init__(self, model_name="all-MiniLM-L6-v2") -> None:
-        super().__init__(model_name)
+    def __init__(self) -> None:
+        super().__init__()
         self.chunk_embeddings = None
         self.chunk_metadata = None
 
         self.chunk_embeddings_path = CACHE_PATH / "chunk_embeddings.npy"
         self.chunk_metadata_path = CACHE_PATH / "chunk_metadata.json"
+
+    def search_chunks(self, query: str, limit: int = 10):
+
+        if self.chunk_embeddings is None:
+            raise ValueError(
+                "Chunk embeddings not loaded. Call load_or_create_chunk_embeddings first."
+            )
+        
+        query_embedding = self.generate_embedding(query)
+
+        chunk_score = []
+
+        movie_score = defaultdict(lambda: 0) # default score is 0
+
+        for i, embedding in enumerate(self.chunk_embeddings):
+            similarity = cosine_similarity(embedding, query_embedding)
+
+            metadata = self.chunk_metadata["chunks"][i]
+            
+            mid, cid = metadata["movie_id"], metadata["chunk_id"]
+
+            chunk_score.append({
+                    "chunk_id": cid,
+                    "movie_id": mid,
+                    "score": similarity,
+                })
+            movie_score[mid] = max(similarity, movie_score[mid]) # here if no value is added
+                                                                 # default value is 0, hence
+                                                                 # max value i.e new value 
+                                                                 # will be added
+        
+        #for chunk_sc in chunk_score:
+        #    if chunk_sc["movie_id"] not in movie_score:
+        #        movie_score[chunk_sc["movie_id"]] = chunk_sc["score"]
+
+        #    if chunk_sc["score"] > movie_score[chunk_sc["movie_id"]]:
+        #        movie_score[chunk_sc["movie_id"]] = chunk_sc["score"]
+
+        movie_score_sorted = sorted(movie_score.items(), key= lambda x: x[1], reverse=True)
+
+        top_results = movie_score_sorted[:limit]
+        
+        final_result = []
+        for movie_id, score in top_results:
+            doc = self.documents[movie_id]
+
+            final_result.append({
+                    "id": movie_id,
+                    "title": doc["title"],
+                    "description": doc["description"][:100],
+                    "score": round(score, SCORE_PRECISION),
+                    "metadata": doc.get("metadata", {})
+                })
+
+        return final_result
 
     def build_chunk_embeddings(self, documents):
         self.documents = documents
@@ -158,6 +215,19 @@ class ChunkedSemanticSearch(SemanticSearch):
         return self.build_chunk_embeddings(documents)
 
 
+def search_chunked_command(query, limit):
+    movies = load_movies()
+
+    css = ChunkedSemanticSearch()
+
+    css.load_or_create_chunk_embeddings(movies)
+
+    result = css.search_chunks(query, limit)
+    
+    for i, res in enumerate(result):
+        print(f"\n{i}. {res["title"]} (score: {res["score"]:.4f})")
+        print(f"   {res["description"]}...")
+
 def embed_chunks_command():
     movies = load_movies()
 
@@ -169,7 +239,7 @@ def embed_chunks_command():
 
 def semantic_chunk(text, max_chunk_size, overlap):
     sentences = re.split(r"(?<=[.!?])\s+", text)
-    
+
     chunks = []
     step_size = max_chunk_size - overlap
 
@@ -180,10 +250,9 @@ def semantic_chunk(text, max_chunk_size, overlap):
             break
 
         chunks.append(" ".join(chunk))
-        
+
         if i + max_chunk_size >= len(sentences):
             break
-
 
     return chunks
 
