@@ -238,18 +238,34 @@ def embed_chunks_command():
 
 
 def semantic_chunk(text, max_chunk_size, overlap):
+    text = text.strip()
+
+    if not text:
+        return []
+
     sentences = re.split(r"(?<=[.!?])\s+", text)
+
+    if len(sentences) == 1 and not re.search(r"[.!?]$", sentences[0]):
+        sentences = [text]
 
     chunks = []
     step_size = max_chunk_size - overlap
 
     for i in range(0, len(sentences), step_size):
-        chunk = sentences[i : i + max_chunk_size]
+        chunk_sentences = sentences[i : i + max_chunk_size]
+        
+        cleaned_sentences = []
 
-        if not chunk:
-            break
+        for s in chunk_sentences:
+            s = s.strip()
 
-        chunks.append(" ".join(chunk))
+            if s:
+                cleaned_sentences.append(s)
+
+        if not cleaned_sentences:
+            continue 
+
+        chunks.append(" ".join(cleaned_sentences))
 
         if i + max_chunk_size >= len(sentences):
             break
