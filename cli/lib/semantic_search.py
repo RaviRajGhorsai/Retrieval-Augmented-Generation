@@ -113,9 +113,9 @@ class ChunkedSemanticSearch(SemanticSearch):
                 continue
 
             chunks = semantic_chunk(description, max_chunk_size=4, overlap=1)
-            
-            all_chunks.append(chunks)
-            
+
+            all_chunks += chunks
+
             for chunk_id in range(len(chunks)):
                 chunk_metadata.append(
                     {
@@ -169,16 +169,21 @@ def embed_chunks_command():
 
 def semantic_chunk(text, max_chunk_size, overlap):
     sentences = re.split(r"(?<=[.!?])\s+", text)
+    
     chunks = []
     step_size = max_chunk_size - overlap
 
     for i in range(0, len(sentences), step_size):
         chunk = sentences[i : i + max_chunk_size]
 
-        if len(chunk) < max_chunk_size:
+        if not chunk:
             break
 
         chunks.append(" ".join(chunk))
+        
+        if i + max_chunk_size >= len(sentences):
+            break
+
 
     return chunks
 
