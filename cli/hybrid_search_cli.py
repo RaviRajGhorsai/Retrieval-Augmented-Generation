@@ -1,5 +1,6 @@
 import argparse
-from lib.hybrid_search import normalize_command
+from lib.hybrid_search import normalize_command, weighted_search_command
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Hybrid Search CLI")
@@ -13,12 +14,29 @@ def main() -> None:
         "scores", type=float, nargs="+", help="List of scores to normalize"
     )
 
+    weighted_search_parser = subparsers.add_parser(
+        "weighted-search",
+        help="Perform weighted search (combine both bm25 score and semantic score)",
+    )
+    weighted_search_parser.add_argument("query", type=str, help="Search query")
+    weighted_search_parser.add_argument(
+        "--alpha",
+        type=float,
+        help="""alpha (or "α") is just a constant that we can use to dynamically control the weighting between the two scores""",
+    )
+    weighted_search_parser.add_argument(
+        "--limit", type=int, default=5, help="Top n results: default=5"
+    )
+
     args = parser.parse_args()
 
     match args.command:
-
         case "normalize":
             normalize_command(args.scores)
+
+        case "weighted-search":
+            weighted_search_command(args.query, args.alpha, args.limit) 
+
         case _:
             parser.print_help()
 

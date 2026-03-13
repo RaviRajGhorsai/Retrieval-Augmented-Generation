@@ -45,7 +45,7 @@ class SemanticSearch:
         for score, document in scores:
             format_results.append(
                 {
-                    "doc_id": document["id"],
+                    "doc_id": document["id"] + 1,
                     "title": document["title"],
                     "score": score,
                     "description": document["description"],
@@ -116,7 +116,7 @@ class ChunkedSemanticSearch(SemanticSearch):
         for i, embedding in enumerate(self.chunk_embeddings):
             similarity = cosine_similarity(embedding, query_embedding)
 
-            metadata = self.chunk_metadata["chunks"][i]
+            metadata = self.chunk_metadata[i]
             
             mid, cid = metadata["movie_id"], metadata["chunk_id"]
 
@@ -146,7 +146,7 @@ class ChunkedSemanticSearch(SemanticSearch):
             doc = self.documents[movie_id]
 
             final_result.append({
-                    "id": movie_id,
+                    "id": movie_id + 1,
                     "title": doc["title"],
                     "description": doc["description"][:100],
                     "score": round(score, SCORE_PRECISION),
@@ -208,7 +208,8 @@ class ChunkedSemanticSearch(SemanticSearch):
             self.chunk_embeddings = np.load(self.chunk_embeddings_path)
 
             with open(self.chunk_metadata_path, "r") as f:
-                self.chunk_metadata = json.load(f)
+                metadata = json.load(f)
+                self.chunk_metadata = metadata["chunks"]
 
             return self.chunk_embeddings
 
