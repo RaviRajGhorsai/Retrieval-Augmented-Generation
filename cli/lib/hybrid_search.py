@@ -1,9 +1,12 @@
 import os
 
+from lib.prompt.re_rank import individual_rerank
+
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch
 from lib.search_utils import load_movies
-from lib.llm import check_spelling, rewrite_query, expand_query
+from lib.llm import augment_prompt
+
 
 class HybridSearch:
     def __init__(self, documents):
@@ -39,30 +42,43 @@ class HybridSearch:
         return results[:limit]
 
 
-def rrf_search_command(query, limit, k, enhance=None):
+def rrf_search_command(query, limit, k, enhance=None, re_rank_method=None):
     movies = load_movies()
     hs = HybridSearch(movies)
 
-    match enhance:
-        case "spell":
-            new_query = check_spelling(query)
-            print(f"Enhanced query ({enhance}): '{query}' -> '{new_query}'\n")
-            
-            query = new_query
+    if enhance:
+        new_query = augment_prompt(query, enhance)
+        print(f"Enhanced query ({enhance}): '{query}' -> '{new_query}'\n")
 
-        case "rewrite":
-            new_query =  rewrite_query(query)
-            print(f"Enhanced query ({enhance}): '{query}' -> '{new_query}'\n")
-            
-            query = new_query
+        query = new_query
 
-        case "expand":
-            new_query = expand_query(query)
-            print(f"Enhanced query ({enhance}): '{query}' -> '{new_query}'\n")
-            
-            query = new_query
+    # match enhance:
+    #    case "spell":
+    #        new_query = check_spelling(query)
+    #        print(f"Enhanced query ({enhance}): '{query}' -> '{new_query}'\n")
 
-    results = hs.rrf_search(query, k, limit)
+    #        query = new_query
+
+    #    case "rewrite":
+    #        new_query = rewrite_query(query)
+    #        print(f"Enhanced query ({enhance}): '{query}' -> '{new_query}'\n")
+
+    #        query = new_query
+
+    #    case "expand":
+    #        new_query = expand_query(query)
+    #        print(f"Enhanced query ({enhance}): '{query}' -> '{new_query}'\n")
+
+    #        query = new_query
+
+    rrf_limit = limit * 5 if re_rank_method else limit
+
+    results = hs.rrf_search(query, k, rrf_limit)
+
+    if re_rank_method:
+        results = individual_rerank(query, results, rrf_limit)
+        print(f"Re-ranking top {limit} results using individual method...")
+        print(f"Reciprocal Rank Fusion Results for {query} (k={k}):\n")
 
     for i, res in enumerate(results):
         print(f"{i}. {res['title']}")
