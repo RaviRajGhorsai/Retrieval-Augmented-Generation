@@ -1,4 +1,5 @@
 import os
+import json
 import time
 from dotenv import load_dotenv
 from google import genai
@@ -33,3 +34,31 @@ def individual_rerank(query, documents, limit):
     results = sorted(results, key=lambda x: x["rerank_response"], reverse=True)
     limit = int(limit / 5)
     return results[:limit]
+
+
+def batch_rerank(query, documents, limit):
+
+    with open(PROMPT_PATH / "re_rank_batch.md", "r") as f:
+        prompt = f.read()
+
+    doc_list_str = ""
+    _temp = """<movie id={idx}>{title}:\n{desc}\n</movie>\n"""
+    for idx, doc in enumerate(documents):
+        doc_list_str += _temp.format(
+            idx=idx, title=doc["title"], desc=doc["description"]
+        )
+
+    _prompt = prompt.format(query=query, doc_list_str=doc_list_str, len=len(documents))
+
+    response = client.models.generate_content(model="gemma-3-27b-it", contents=_prompt)
+
+    response_parsed = json.loads(response.text)
+
+    results = []
+
+    for idx, doc in enumerate(documents):
+        results.append({**doc, "rerank_score": response_parsed.index(idx)})
+
+    results = sorted(results, key=lambda x: x["rerank_score"], reverse=False)
+
+    return results
