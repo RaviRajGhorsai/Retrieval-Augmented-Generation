@@ -38,8 +38,9 @@ def main() -> None:
     )
     rrf_search_parser.add_argument("query", type=str, help="User query")
     rrf_search_parser.add_argument(
-        "-k",
+        "--k",
         type=int,
+        default=60,
         help="The k parameter (a constant) controls how much more weight we give to higher-ranked results vs. lower-ranked ones",
     )
     rrf_search_parser.add_argument(
@@ -56,7 +57,7 @@ def main() -> None:
             weighted_search_command(args.query, args.alpha, args.limit)
 
         case "rrf-search":
-            rrf_search_command(args.query, args.k, args.limit)
+            rrf_search_command(args.query, args.limit, args.k)
 
         case _:
             parser.print_help()

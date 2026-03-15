@@ -34,14 +34,22 @@ class HybridSearch:
         bm25_search_results = self._bm25_search(query, limit * 500)
         semantic_search_results = self.semantic_search.search_chunks(query, limit * 500)
 
+        results = combine_result_rrf(bm25_search_results, semantic_search_results, k)
 
-def rrf_search_command(query, k, limit):
+        return results[:limit]
+
+
+def rrf_search_command(query, limit, k):
     movies = load_movies()
     hs = HybridSearch(movies)
 
     results = hs.rrf_search(query, k, limit)
 
-    print(results)
+    for i, res in enumerate(results):
+        print(f"{i}. {res['title']}")
+        print(f"RRF Score: {res['rrf_score']:.3f}")
+        print(f"BM25 rank: {res['bm25_rank']} Semantic Rank: {res['semantic_rank']}")
+        print(f"{res['description'][:100]}\n")
 
 
 def weighted_search_command(query, alpha, limit):
@@ -68,6 +76,60 @@ def normalize_search_results(results):
         result["normalized_score"] = norm_scores[idx]
 
     return results
+
+
+def combine_result_rrf(bm25_results, semantic_results, k):
+
+    bm25_rank = rank(bm25_results)
+    semantic_rank = rank(semantic_results)
+
+    docs_maps = {}
+
+    for doc in bm25_rank:
+        doc_id = doc["doc_id"]
+
+        docs_maps[doc_id] = {
+            "doc_id": doc_id,
+            "bm25_rank": doc["rank"],
+            "semantic_rank": None,
+            "title": doc["title"],
+            "description": doc["description"],
+        }
+    for doc in semantic_rank:
+        doc_id = doc["id"]
+
+        if doc_id not in docs_maps:
+            docs_maps[doc_id] = {
+                "doc_id": doc_id,
+                "bm25_rank": None,
+                "semantic_rank": doc["rank"],
+                "title": doc["title"],
+                "description": doc["description"],
+            }
+        else:
+            docs_maps[doc_id]["semantic_rank"] = doc["rank"]
+
+    for v in docs_maps.values():
+        v["rrf_score"] = rrf_score(v["bm25_rank"], k) + rrf_score(v["semantic_rank"], k)
+
+    results = sorted(docs_maps.values(), key=lambda x: x["rrf_score"], reverse=True)
+
+    return results
+
+
+def rank(scores):
+    ranked = sorted(scores, key=lambda x: x["score"], reverse=True)
+
+    for rank, item in enumerate(ranked, start=1):
+        item["rank"] = rank
+
+    return ranked
+
+
+def rrf_score(rank, k=60):
+    if not isinstance(rank, int):
+        return 0
+    return 1 / (k + rank)
 
 
 def combine_search_results(bm25_results, semantic_results, alpha):
