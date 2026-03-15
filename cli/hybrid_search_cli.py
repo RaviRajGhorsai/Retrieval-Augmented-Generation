@@ -4,6 +4,7 @@ from lib.hybrid_search import (
     weighted_search_command,
     rrf_search_command,
 )
+from lib.test_gemini import enhance_query
 
 
 def main() -> None:
@@ -46,6 +47,12 @@ def main() -> None:
     rrf_search_parser.add_argument(
         "--limit", type=int, default=5, help="Returns top n results"
     )
+    rrf_search_parser.add_argument(
+        "--enhance",
+        type=str,
+        choices=["spell"],
+        help="Query enhancement method",
+    )
 
     args = parser.parse_args()
 
@@ -57,7 +64,7 @@ def main() -> None:
             weighted_search_command(args.query, args.alpha, args.limit)
 
         case "rrf-search":
-            rrf_search_command(args.query, args.limit, args.k)
+            rrf_search_command(args.query, args.limit, args.k, args.enhance)
 
         case _:
             parser.print_help()

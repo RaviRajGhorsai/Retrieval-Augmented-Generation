@@ -5,6 +5,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MOVIE_PATH = PROJECT_ROOT / "data" / "movies.json"
 STOP_WORDS_PATH = PROJECT_ROOT / "data" / "stopwords.txt"
 CACHE_PATH = PROJECT_ROOT / "cache"
+PROMPT_PATH = PROJECT_ROOT / "prompt"
 
 
 def load_movies() -> list[dict]:
