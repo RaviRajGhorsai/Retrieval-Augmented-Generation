@@ -1,5 +1,9 @@
 import argparse
-from lib.hybrid_search import normalize_command, weighted_search_command
+from lib.hybrid_search import (
+    normalize_command,
+    weighted_search_command,
+    rrf_search_command,
+)
 
 
 def main() -> None:
@@ -28,6 +32,20 @@ def main() -> None:
         "--limit", type=int, default=5, help="Top n results: default=5"
     )
 
+    rrf_search_parser = subparsers.add_parser(
+        "rrf-search",
+        help="Perform rrf search (combine both bm25 score and semantic score)",
+    )
+    rrf_search_parser.add_argument("query", type=str, help="User query")
+    rrf_search_parser.add_argument(
+        "-k",
+        type=int,
+        help="The k parameter (a constant) controls how much more weight we give to higher-ranked results vs. lower-ranked ones",
+    )
+    rrf_search_parser.add_argument(
+        "--limit", type=int, default=5, help="Returns top n results"
+    )
+
     args = parser.parse_args()
 
     match args.command:
@@ -35,7 +53,10 @@ def main() -> None:
             normalize_command(args.scores)
 
         case "weighted-search":
-            weighted_search_command(args.query, args.alpha, args.limit) 
+            weighted_search_command(args.query, args.alpha, args.limit)
+
+        case "rrf-search":
+            rrf_search_command(args.query, args.k, args.limit)
 
         case _:
             parser.print_help()

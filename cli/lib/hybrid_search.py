@@ -31,7 +31,17 @@ class HybridSearch:
         return combined_results[:limit]
 
     def rrf_search(self, query, k, limit=10):
-        raise NotImplementedError("RRF hybrid search is not implemented yet.")
+        bm25_search_results = self._bm25_search(query, limit * 500)
+        semantic_search_results = self.semantic_search.search_chunks(query, limit * 500)
+
+
+def rrf_search_command(query, k, limit):
+    movies = load_movies()
+    hs = HybridSearch(movies)
+
+    results = hs.rrf_search(query, k, limit)
+
+    print(results)
 
 
 def weighted_search_command(query, alpha, limit):
