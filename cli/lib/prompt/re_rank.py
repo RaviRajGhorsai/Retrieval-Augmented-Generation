@@ -14,7 +14,7 @@ client = genai.Client(api_key=api_key)
 
 
 def individual_rerank(query, documents, limit):
-    with open(PROMPT_PATH / "re_rank.md", "r") as f:
+    with open(PROMPT_PATH / "re_rank_individual.md", "r") as f:
         prompt = f.read()
 
     results = []
