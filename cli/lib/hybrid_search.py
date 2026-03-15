@@ -3,7 +3,7 @@ import os
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch
 from lib.search_utils import load_movies
-from lib.llm import check_spelling
+from lib.llm import check_spelling, rewrite_query, expand_query
 
 class HybridSearch:
     def __init__(self, documents):
@@ -46,6 +46,18 @@ def rrf_search_command(query, limit, k, enhance=None):
     match enhance:
         case "spell":
             new_query = check_spelling(query)
+            print(f"Enhanced query ({enhance}): '{query}' -> '{new_query}'\n")
+            
+            query = new_query
+
+        case "rewrite":
+            new_query =  rewrite_query(query)
+            print(f"Enhanced query ({enhance}): '{query}' -> '{new_query}'\n")
+            
+            query = new_query
+
+        case "expand":
+            new_query = expand_query(query)
             print(f"Enhanced query ({enhance}): '{query}' -> '{new_query}'\n")
             
             query = new_query

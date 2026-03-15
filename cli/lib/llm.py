@@ -11,14 +11,29 @@ if not api_key:
 
 client = genai.Client(api_key=api_key)
 
+
 def generate_text(prompt, query):
     prompt = prompt.format(query=query)
     response = client.models.generate_content(model="gemma-3-27b-it", contents=prompt)
     return response.text
 
+
 def check_spelling(query):
-    with open(PROMPT_PATH/"spelling.md", "r") as f:
+    with open(PROMPT_PATH / "spelling.md", "r") as f:
         prompt = f.read()
 
     return generate_text(prompt, query)
 
+
+def rewrite_query(query):
+    with open(PROMPT_PATH / "rewrite.md", "r") as f:
+        prompt = f.read()
+
+    return generate_text(prompt, query)
+
+
+def expand_query(query):
+    with open(PROMPT_PATH / "expand.md", "r") as f:
+        prompt = f.read()
+
+    return generate_text(prompt, query)
