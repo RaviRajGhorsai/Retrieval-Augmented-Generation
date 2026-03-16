@@ -15,9 +15,6 @@ def main():
     limit = args.limit
 
     evaluate(limit)
-    
-    
-        
 
     # run evaluation logic here
 
