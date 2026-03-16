@@ -1,6 +1,6 @@
 import os
 
-from lib.prompt.re_rank import individual_rerank, batch_rerank
+from lib.prompt.re_rank import individual_rerank, batch_rerank, cross_encoder
 
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch
@@ -62,16 +62,20 @@ def rrf_search_command(query, limit, k, enhance=None, re_rank_method=None):
                 results = individual_rerank(query, results, rrf_limit)
                 print(f"Re-ranking top {limit} results using individual method...")
 
-
             case "batch":
-                results =  batch_rerank(query, results, limit)
+                results = batch_rerank(query, results, limit)
                 print(f"Re-ranking top {limit} results using batch method...")
 
+            case "cross_encoder":
+                results = cross_encoder(query, results, limit)
+                print(f"Re-ranking top {limit} results using cross_encoder method...")
 
         print(f"Reciprocal Rank Fusion Results for {query} (k={k}):\n")
 
     for i, res in enumerate(results):
         print(f"{i}. {res['title']}")
+        if re_rank_method == "cross_encoder":
+            print(f"Cross Encoder Score: {res['cross_encoder_score']}")
         print(f"RRF Score: {res['rrf_score']:.3f}")
         print(f"BM25 rank: {res['bm25_rank']} Semantic Rank: {res['semantic_rank']}")
         print(f"{res['description'][:100]}\n")

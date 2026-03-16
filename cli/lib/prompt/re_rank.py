@@ -4,6 +4,7 @@ import time
 from dotenv import load_dotenv
 from google import genai
 from lib.search_utils import PROMPT_PATH
+from sentence_transformers import CrossEncoder
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -62,3 +63,22 @@ def batch_rerank(query, documents, limit):
     results = sorted(results, key=lambda x: x["rerank_score"], reverse=False)
 
     return results
+
+
+def cross_encoder(query, documents, limit):
+    pairs = []
+
+    for doc in documents:
+        pairs.append([query, f"{doc.get('title')} - {doc.get('description', '')}"])
+
+    cross_encoder = CrossEncoder("cross-encoder/ms-marco-TinyBERT-L2-v2")
+
+    scores = cross_encoder.predict(pairs)
+    results = []
+
+    for idx, doc in enumerate(documents):
+        results.append({**doc, "cross_encoder_score": scores[idx]})
+
+    results = sorted(results, key=lambda x: x["cross_encoder_score"], reverse=True)
+
+    return results[:limit]
