@@ -9,7 +9,7 @@ def load_test_case():
 
     return test_cases["test_cases"]
 
-
+# Precision Metrices
 def evaluate(limit):
     test_cases = load_test_case()
 
@@ -29,10 +29,13 @@ def evaluate(limit):
             relevent_cnt += rrf_result["title"] in relevent_docs
 
         precision = relevent_cnt / limit
+        recall = relevent_cnt / len(relevent_docs)
+
         retrieved = ", ".join([r["title"] for r in rrf_results])
 
         print(f"Query: {query}")
-        print(f"\t- Precision@{limit}: {precision}")
+        print(f"\t- Precision@{limit}: {precision:.4f}")
+        print(f"\t- Recall@{limit}: {recall:.4f}")
         print(f"\t- Retrieved: {retrieved}")
         print(f"\t- Relevent: {relevent_docs}\n")
 
