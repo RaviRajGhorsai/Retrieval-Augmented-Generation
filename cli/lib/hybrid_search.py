@@ -5,7 +5,7 @@ from lib.prompt.re_rank import individual_rerank, batch_rerank, cross_encoder
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch
 from lib.search_utils import load_movies
-from lib.llm import augment_prompt
+from lib.llm import augment_prompt, error_analysis
 
 
 class HybridSearch:
@@ -39,12 +39,23 @@ class HybridSearch:
 
         results = combine_result_rrf(bm25_search_results, semantic_search_results, k)
 
+       # print("Results after RRF search\n")
+       # for i, res in enumerate(results[:limit]):
+       #     print(f"{i}. {res['title']}")
+       #     print(f"RRF Score: {res['rrf_score']:.3f}")
+       #     print(
+       #         f"BM25 rank: {res['bm25_rank']} Semantic Rank: {res['semantic_rank']}"
+       #     )
+       #     print(f"{res['description'][:100]}\n")
+
         return results[:limit]
 
 
-def rrf_search_command(query, limit, k, enhance=None, re_rank_method=None):
+def rrf_search_command(query, limit, k, evaluate, enhance=None, re_rank_method=None):
     movies = load_movies()
     hs = HybridSearch(movies)
+
+    print(f"Query: {query}")
 
     if enhance:
         new_query = augment_prompt(query, enhance)
@@ -79,6 +90,9 @@ def rrf_search_command(query, limit, k, enhance=None, re_rank_method=None):
         print(f"RRF Score: {res['rrf_score']:.3f}")
         print(f"BM25 rank: {res['bm25_rank']} Semantic Rank: {res['semantic_rank']}")
         print(f"{res['description'][:100]}\n")
+
+    if evaluate:
+        error_analysis(results, query)
 
 
 def weighted_search_command(query, alpha, limit):

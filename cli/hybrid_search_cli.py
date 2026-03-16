@@ -59,6 +59,11 @@ def main() -> None:
         choices=["individual", "batch", "cross_encoder"],
         help="Use LLMs for Re-Ranking",
     )
+    rrf_search_parser.add_argument(
+        "--evaluate",
+        type=bool,
+        help="LLM evaluates the result on how relevent/accurate it is.",
+    )
 
     args = parser.parse_args()
 
@@ -71,7 +76,7 @@ def main() -> None:
 
         case "rrf-search":
             rrf_search_command(
-                args.query, args.limit, args.k, args.enhance, args.rerank_method
+                args.query, args.limit, args.k, args.evaluate, args.enhance, args.rerank_method
             )
 
         case _:
