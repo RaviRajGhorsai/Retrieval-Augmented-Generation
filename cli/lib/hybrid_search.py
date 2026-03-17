@@ -39,14 +39,15 @@ class HybridSearch:
 
         results = combine_result_rrf(bm25_search_results, semantic_search_results, k)
 
-       # print("Results after RRF search\n")
-       # for i, res in enumerate(results[:limit]):
-       #     print(f"{i}. {res['title']}")
-       #     print(f"RRF Score: {res['rrf_score']:.3f}")
-       #     print(
-       #         f"BM25 rank: {res['bm25_rank']} Semantic Rank: {res['semantic_rank']}"
-       #     )
-       #     print(f"{res['description'][:100]}\n")
+        print("Results after RRF search:")
+        print("-"*50)
+        for i, res in enumerate(results[:5]):
+            print(f"{i}. {res['title']}")
+            print(f"RRF Score: {res['rrf_score']:.3f}")
+            print(
+                f"BM25 rank: {res['bm25_rank']} Semantic Rank: {res['semantic_rank']}"
+            )
+            print(f"{res['description'][:100]}\n")
 
         return results[:limit]
 
@@ -74,11 +75,11 @@ def rrf_search_command(query, limit, k, evaluate, enhance=None, re_rank_method=N
                 print(f"Re-ranking top {limit} results using individual method...")
 
             case "batch":
-                results = batch_rerank(query, results, limit)
+                results = batch_rerank(query, results, rrf_limit)
                 print(f"Re-ranking top {limit} results using batch method...")
 
             case "cross_encoder":
-                results = cross_encoder(query, results, limit)
+                results = cross_encoder(query, results, rrf_limit)
                 print(f"Re-ranking top {limit} results using cross_encoder method...")
 
         print(f"Reciprocal Rank Fusion Results for {query} (k={k}):\n")
