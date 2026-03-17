@@ -1,5 +1,5 @@
 import argparse
-from lib.augmented_generation import rag 
+from lib.llm.augmented_generation import rag 
 
 def main():
     parser = argparse.ArgumentParser(description="Retrieval Augmented Generation CLI")

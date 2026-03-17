@@ -1,5 +1,5 @@
 import argparse
-from lib.evaluate import evaluate
+from lib.llm.evaluate import evaluate
 
 
 def main():

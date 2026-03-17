@@ -1,5 +1,5 @@
-from .search_utils import PROMPT_PATH, load_movies
-from .hybrid_search import HybridSearch
+from lib.search_utils import load_movies
+from lib.hybrid_search import HybridSearch
 from .llm import client
 
 def rag(query):
@@ -8,6 +8,7 @@ def rag(query):
     hs = HybridSearch(movies)
 
     docs = hs.rrf_search(query, k=60, limit=6)
+    
 
     prompt = f"""Answer the question or provide information based on the provided documents. This should be tailored                
                 to Hoopla users. Hoopla is a movie streaming service.

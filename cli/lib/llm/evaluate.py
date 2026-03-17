@@ -1,6 +1,6 @@
 import json
-from .search_utils import PROJECT_ROOT, load_movies
-from .hybrid_search import HybridSearch
+from lib.search_utils import PROJECT_ROOT, load_movies
+from lib.hybrid_search import HybridSearch
 
 
 def load_test_case():

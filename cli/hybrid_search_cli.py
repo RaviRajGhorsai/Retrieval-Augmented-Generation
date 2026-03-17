@@ -4,7 +4,6 @@ from lib.hybrid_search import (
     weighted_search_command,
     rrf_search_command,
 )
-from lib.test_gemini import enhance_query
 
 
 def main() -> None:
@@ -61,7 +60,7 @@ def main() -> None:
     )
     rrf_search_parser.add_argument(
         "--evaluate",
-        type=bool,
+        action="store_true",
         help="LLM evaluates the result on how relevent/accurate it is.",
     )
 
@@ -76,7 +75,12 @@ def main() -> None:
 
         case "rrf-search":
             rrf_search_command(
-                args.query, args.limit, args.k, args.evaluate, args.enhance, args.rerank_method
+                args.query,
+                args.limit,
+                args.k,
+                args.evaluate,
+                args.enhance,
+                args.rerank_method,
             )
 
         case _:

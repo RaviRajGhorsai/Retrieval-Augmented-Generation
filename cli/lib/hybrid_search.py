@@ -1,11 +1,11 @@
 import os
 
-from lib.prompt.re_rank import individual_rerank, batch_rerank, cross_encoder
+from lib.llm.re_rank import individual_rerank, batch_rerank, cross_encoder
 
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch
 from lib.search_utils import load_movies
-from lib.llm import augment_prompt, error_analysis
+from lib.llm.llm import augment_prompt, error_analysis
 
 
 class HybridSearch:
