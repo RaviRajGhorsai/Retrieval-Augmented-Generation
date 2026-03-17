@@ -73,7 +73,9 @@ def main():
         "search_chunked", help="Semantic Search"
     )
     search_chunk_parser.add_argument("query", type=str, help="Inpur query")
-    search_chunk_parser.add_argument("--limit", type=int, default=5, help="top n results")
+    search_chunk_parser.add_argument(
+        "--limit", type=int, default=5, help="top n results"
+    )
 
     args = parser.parse_args()
 
@@ -101,7 +103,7 @@ def main():
 
         case "embed_chunks":
             embed_chunks_command()
-        
+
         case "search_chunked":
             search_chunked_command(args.query, args.limit)
 

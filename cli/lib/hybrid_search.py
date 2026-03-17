@@ -40,7 +40,7 @@ class HybridSearch:
         results = combine_result_rrf(bm25_search_results, semantic_search_results, k)
 
         print("Results after RRF search:")
-        print("-"*50)
+        print("-" * 50)
         for i, res in enumerate(results[:5]):
             print(f"{i}. {res['title']}")
             print(f"RRF Score: {res['rrf_score']:.3f}")

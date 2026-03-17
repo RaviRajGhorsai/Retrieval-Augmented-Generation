@@ -20,9 +20,7 @@ def main():
         "--limit", type=int, default=5, help="Display top n results."
     )
 
-    question_parser = subparsers.add_parser(
-        "question", help="Ask question"
-    )
+    question_parser = subparsers.add_parser("question", help="Ask question")
     question_parser.add_argument("question", type=str, help="Input questions")
     question_parser.add_argument(
         "--limit", type=int, default=5, help="Display top n results."
@@ -34,7 +32,7 @@ def main():
         case "rag":
             query = args.query
             rag(query)
-        
+
         case "summary":
             summary(args.query, args.limit)
 

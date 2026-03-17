@@ -1,6 +1,5 @@
 import argparse
 from lib.llm.multi_model_search import describe_image
-import mimetypes
 
 
 def main():

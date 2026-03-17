@@ -129,24 +129,23 @@ class InvertedIndex:
 
         ranked_docs = sorted(scores.items(), key=lambda x: x[1], reverse=True)
         results = ranked_docs[:limit]
-        
-        format_results = [] 
+
+        format_results = []
         for doc_id, score in results:
             title = self.docmap[doc_id]["title"]
             format_results.append(
-                        {
-                            "doc_id": doc_id,
-                            "title": title,
-                            "score": score,
-                            "description": self.docmap[doc_id]["description"]
-
-                            }
-                    )
+                {
+                    "doc_id": doc_id,
+                    "title": title,
+                    "score": score,
+                    "description": self.docmap[doc_id]["description"],
+                }
+            )
 
         print("BM25 search results:")
-        print("-"*25)
+        print("-" * 25)
         for id, r in enumerate(format_results[:5]):
-            print(f"{id}. ({r["doc_id"]}) {r["title"]} - Score {r["score"]:.2f}")            
+            print(f"{id}. ({r['doc_id']}) {r['title']} - Score {r['score']:.2f}")
 
         return format_results
 
@@ -251,11 +250,12 @@ def bm25search_command(query, limit):
     idx = InvertedIndex()
 
     idx.load()
- 
+
     res = idx.bm25_search(query, limit)
 
     for id, r in enumerate(res):
-        print(f"{id}. ({r["doc_id"]}) {r["title"]} - Score {r["score"]:.2f}")
+        print(f"{id}. ({r['doc_id']}) {r['title']} - Score {r['score']:.2f}")
+
 
 def bm25_tf_command(doc_id, term, k1, b):
     idx = InvertedIndex()
