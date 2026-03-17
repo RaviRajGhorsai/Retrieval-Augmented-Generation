@@ -1,6 +1,6 @@
 import argparse
 from lib.llm.augmented_generation import rag
-from lib.llm.summary import summary
+from lib.llm.summary import summary, answer_question
 
 
 def main():
@@ -20,6 +20,14 @@ def main():
         "--limit", type=int, default=5, help="Display top n results."
     )
 
+    question_parser = subparsers.add_parser(
+        "question", help="Ask question"
+    )
+    question_parser.add_argument("question", type=str, help="Input questions")
+    question_parser.add_argument(
+        "--limit", type=int, default=5, help="Display top n results."
+    )
+
     args = parser.parse_args()
 
     match args.command:
@@ -29,6 +37,10 @@ def main():
         
         case "summary":
             summary(args.query, args.limit)
+
+        case "question":
+            answer_question(args.question, args.limit)
+
         case _:
             parser.print_help()
 
