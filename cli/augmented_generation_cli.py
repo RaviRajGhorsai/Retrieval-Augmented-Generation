@@ -1,5 +1,7 @@
 import argparse
-from lib.llm.augmented_generation import rag 
+from lib.llm.augmented_generation import rag
+from lib.llm.summary import summary
+
 
 def main():
     parser = argparse.ArgumentParser(description="Retrieval Augmented Generation CLI")
@@ -10,12 +12,23 @@ def main():
     )
     rag_parser.add_argument("query", type=str, help="Search query for RAG")
 
+    summary_parser = subparsers.add_parser(
+        "summary", help="AI Summary of the search results."
+    )
+    summary_parser.add_argument("query", type=str, help="Input user query")
+    summary_parser.add_argument(
+        "--limit", type=int, default=5, help="Display top n results."
+    )
+
     args = parser.parse_args()
 
     match args.command:
         case "rag":
             query = args.query
             rag(query)
+        
+        case "summary":
+            summary(args.query, args.limit)
         case _:
             parser.print_help()
 
