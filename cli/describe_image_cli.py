@@ -4,21 +4,32 @@ from lib.llm.multi_model_search import describe_image
 
 def main():
     parser = argparse.ArgumentParser(description="Search Evaluation CLI")
-    parser.add_argument(
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    image_parser = subparsers.add_parser(
+        "generate-query", help="Generate a search query from an image"
+    )
+    image_parser.add_argument(
         "--query",
         type=str,
-        help="Input query",
+        help="Optional guiding prompt",
     )
 
-    parser.add_argument(
+    image_parser.add_argument(
         "--image",
         type=str,
+        required=True,
         help="Input image (enter path of image)",
     )
 
     args = parser.parse_args()
 
-    describe_image(args.image, args.query)
+    match args.command:
+        case "generate-query":
+            describe_image(args.image, args.query)
+
+        case _:
+            parser.print_help()
 
     # run evaluation logic here
 

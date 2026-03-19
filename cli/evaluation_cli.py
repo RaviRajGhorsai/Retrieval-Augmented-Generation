@@ -4,7 +4,13 @@ from lib.llm.evaluate import evaluate
 
 def main():
     parser = argparse.ArgumentParser(description="Search Evaluation CLI")
-    parser.add_argument(
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    evaluate_parser = subparsers.add_parser(
+        "evaluate",
+        help="Evaluate search performance using Precision@k, Recall@k, and F1 score",
+    )
+    evaluate_parser.add_argument(
         "--limit",
         type=int,
         default=5,
@@ -12,9 +18,13 @@ def main():
     )
 
     args = parser.parse_args()
-    limit = args.limit
 
-    evaluate(limit)
+    match args.command:
+        case "evaluate":
+            evaluate(args.limit)
+
+        case _:
+            parser.print_help()
 
     # run evaluation logic here
 

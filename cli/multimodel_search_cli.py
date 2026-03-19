@@ -3,7 +3,7 @@ from lib.multimodal_search import verify_embedding, image_search_command
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Hybrid Search CLI")
+    parser = argparse.ArgumentParser(description="Multimodal Search CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     image_embedding = subparsers.add_parser(
