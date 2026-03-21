@@ -154,11 +154,11 @@ class ChunkedSemanticSearch(SemanticSearch):
                 }
             )
 
-        print("Semantic search results:")
-        print("-" * 25)
-        for i, res in enumerate(final_result[:5]):
-            print(f"\n{i}. {res['title']} (score: {res['score']:.4f})")
-            print(f"   {res['description']}...")
+       # print("Semantic search results:")
+       # print("-" * 25)
+       # for i, res in enumerate(final_result[:5]):
+       #     print(f"\n{i}. {res['title']} (score: {res['score']:.4f})")
+       #     print(f"   {res['description']}...")
 
         return final_result
 

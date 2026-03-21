@@ -142,11 +142,11 @@ class InvertedIndex:
                 }
             )
 
-        print("BM25 search results:")
-        print("-" * 25)
-        for id, r in enumerate(format_results[:5]):
-            print(f"{id}. ({r['doc_id']}) {r['title']} - Score {r['score']:.2f}")
-
+#        print("BM25 search results:")
+#        print("-" * 25)
+#        for id, r in enumerate(format_results[:5]):
+#            print(f"{id}. ({r['doc_id']}) {r['title']} - Score {r['score']:.2f}")
+#
         return format_results
 
     def build(self):

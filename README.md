@@ -302,3 +302,252 @@ This project covers the **full lifecycle of a modern search system**, including:
 - Multimodal retrieval
 
 It serves as a **complete foundation for building production-grade RAG systems**.
+
+
+## Installation
+ 
+### 1. Clone the Repository
+```bash
+git clone https://github.com/RaviRajGhorsai/Retrieval-Augmented-Generation
+cd Retrieval-Augmented-Generation
+```
+ 
+### 2. Create a Virtual Environment (recommended)
+```bash
+uv venv
+source venv/bin/activate        # On Windows: venv\Scripts\activate
+```
+ 
+### 3. Install Requirements
+```bash
+uv sync
+```
+
+## Available Commands
+
+## Keyword Search
+
+### 4. Build the Search Index
+Before running any search commands, build the cache first:
+```bash
+uv cli/keyword_search_cli.py build
+```
+ 
+---
+  
+### `build`
+Build and save the cache for BM25 search.
+```bash
+uv run cli/keyword_search_cli.py build
+```
+ 
+---
+ 
+### `bm25search`
+Search movies using full BM25 scoring with an optional result limit.
+```bash
+uv run cli/keyword_search_cli.py.py bm25search "<query>" [--limit N]
+```
+| Argument  | Type   | Required | Default | Description                            |
+|-----------|--------|----------|---------|----------------------------------------|
+| `query`   | string | Yes      | —       | Search query                           |
+| `--limit` | int    | No       | `5`     | Maximum number of results to return    |
+ 
+**Example:**
+```bash
+uv run cli/keyword_search_cli.py bm25search "space adventure" --limit 10
+```
+ 
+---
+ 
+## Quick Reference
+ 
+| Command      | Description                                 |
+|--------------|---------------------------------------------|
+| `build`      | Build and cache index for BM25 search       |
+| `search`     | Basic keyword movie search                  |
+| `tf`         | Term Frequency for a doc/term pair          |
+| `idf`        | Inverse Document Frequency for a term       |
+| `tfidf`      | TF-IDF score for a doc/term pair            |
+| `bm25idf`    | BM25 IDF score for a term                   |
+| `bm25tf`     | BM25 TF score for a doc/term pair           |
+| `bm25search` | Full BM25 ranked search with result limit   |
+
+---
+
+## Semantic Search
+
+### `search_chunked`
+Run semantic search over chunked document embeddings.
+```bash
+uv run cli/semantic_search_cli.py search_chunked "<query>" [--limit N]
+```
+| Argument  | Type   | Required | Default | Description              |
+|-----------|--------|----------|---------|--------------------------|
+| `query`   | string | Yes      | —       | Input query              |
+| `--limit` | int    | No       | `5`     | Number of top results    |
+ 
+**Example:**
+```bash
+uv run cli/semantic_search_cli.py search_chunked "climate change effects" --limit 5
+```
+ 
+---
+ 
+## Quick Reference
+ 
+| Command            | Description                                          |
+|--------------------|------------------------------------------------------|
+| `verify_model`     | Verify the embedding model is initialized            |
+| `embed_text`       | Embed a single piece of text                         |
+| `verify_embeddings`| Generate and verify embeddings for all documents     |
+| `embedquery`       | Generate an embedding for a query                    |
+| `search`           | Semantic search over document embeddings             |
+| `chunk`            | Split text into fixed-size chunks                    |
+| `semantic_chunk`   | Split text into chunks respecting language structure |
+| `embed_chunks`     | Embed all document chunks                            |
+| `search_chunked`   | Semantic search over chunked document embeddings     |
+
+---
+
+## Hybrid Search
+
+### `rrf-search`
+Perform a hybrid search using Reciprocal Rank Fusion (RRF), combining BM25 and semantic rankings. Supports optional query enhancement, LLM-based re-ranking, and result evaluation.
+```bash
+uv run cli/hybrid_search_cli.py rrf-search "<query>" [--k N] [--limit N] [--enhance METHOD] [--rerank-method METHOD] [--evaluate]
+```
+| Argument          | Type   | Required | Default | Description                                                                                      |
+|-------------------|--------|----------|---------|--------------------------------------------------------------------------------------------------|
+| `query`           | string | Yes      | —       | Search query                                                                                     |
+| `--k`             | int    | No       | `60`    | Controls weighting between higher-ranked vs. lower-ranked results (higher k = more even weighting) |
+| `--limit`         | int    | No       | `5`     | Number of top results to return                                                                  |
+| `--enhance`       | string | No       | —       | Query enhancement method: `spell`, `rewrite`, or `expand`                                        |
+| `--rerank-method` | string | No       | —       | LLM re-ranking method: `individual`, `batch`, or `cross_encoder`                                 |
+| `--evaluate`      | flag   | No       | `false` | LLM evaluates result relevance and accuracy                                                      |
+ 
+#### `--enhance` options
+| Value     | Description                                      |
+|-----------|--------------------------------------------------|
+| `spell`   | Correct spelling errors in the query             |
+| `rewrite` | Rewrite the query for better search performance  |
+| `expand`  | Expand the query with related terms              |
+ 
+#### `--rerank-method` options
+| Value           | Description                                      |
+|-----------------|--------------------------------------------------|
+| `individual`    | Re-rank each result individually using an LLM    |
+| `batch`         | Re-rank all results together in a single LLM call|
+| `cross_encoder` | Use a cross-encoder model for re-ranking         |
+ 
+**Examples:**
+```bash
+# Basic RRF search
+uv run cli/hybrid_search_cli.py rrf-search "space exploration" --limit 10
+ 
+# With query expansion and batch re-ranking
+uv run cli/hybrid_search_cli.py rrf-search "climate change" --enhance expand --rerank-method batch --limit 5
+ 
+# Full pipeline with evaluation
+uv run cli/hybrid_search_cli.py rrf-search "dark comedy films" --k 30 --enhance rewrite --rerank-method cross_encoder --evaluate
+```
+ 
+---
+ 
+## Quick Reference
+ 
+| Command           | Description                                                   |
+|-------------------|---------------------------------------------------------------|
+| `normalize`       | Normalize a list of BM25 or semantic scores                   |
+| `weighted-search` | Hybrid search with configurable alpha weighting               |
+| `rrf-search`      | Hybrid search using Reciprocal Rank Fusion with optional query enhancement, re-ranking, and evaluation |
+
+---
+
+## Augmented Generation
+
+### `rag`
+Perform a full RAG pipeline — retrieves relevant documents and generates an AI answer based on the results.
+```bash
+uv run cli/augmented_generation_cli.py rag "<query>"
+```
+| Argument | Type   | Description        |
+|----------|--------|--------------------|
+| `query`  | string | Search query for RAG |
+ 
+**Example:**
+```bash
+uv run cli/augmented_generation_cli.py rag "What are the effects of climate change on biodiversity?"
+```
+ 
+---
+ 
+### `summary`
+Retrieve documents matching the query and return an AI-generated summary of the results.
+```bash
+uv run cli/augmented_generation_cli.py summary "<query>" [--limit N]
+```
+| Argument  | Type   | Required | Default | Description                     |
+|-----------|--------|----------|---------|---------------------------------|
+| `query`   | string | Yes      | —       | Search query                    |
+| `--limit` | int    | No       | `5`     | Number of top results to summarize |
+ 
+**Example:**
+```bash
+uv run cli/augmented_generation_cli.py summary "recent advances in renewable energy" --limit 10
+```
+ 
+---
+ 
+### `question`
+Ask a natural language question and get an AI-generated answer grounded in retrieved data.
+```bash
+uv run cli/augmented_generation_cli.py question "<question>" [--limit N]
+```
+| Argument   | Type   | Required | Default | Description                          |
+|------------|--------|----------|---------|--------------------------------------|
+| `question` | string | Yes      | —       | Question to answer from retrieved data |
+| `--limit`  | int    | No       | `5`     | Number of top results to retrieve    |
+ 
+**Example:**
+```bash
+uv run cli/augmented_generation_cli.py question "Who directed Inception?" --limit 5
+```
+ 
+---
+ 
+## Quick Reference
+ 
+| Command    | Description                                              |
+|------------|----------------------------------------------------------|
+| `rag`      | Retrieve documents and generate an AI answer             |
+| `summary`  | Retrieve documents and generate an AI summary            |
+| `question` | Ask a question and get an answer from retrieved data     |
+
+---
+
+## MultiModal Search
+
+### `image-search`
+Search for movies using an image as the query input.
+```bash
+uv run cli/multimodel_search_cli.py image-search "<img_path>"
+```
+| Argument   | Type   | Description             |
+|------------|--------|-------------------------|
+| `img_path` | string | Path to the input image |
+ 
+**Example:**
+```bash
+uv run cli/multimodel_search_cli.py image-search ./images/movie_poster.png
+```
+ 
+---
+ 
+## Quick Reference
+ 
+| Command                  | Description                                      |
+|--------------------------|--------------------------------------------------|
+| `verify-image-embedding` | Verify image can be embedded by the model        |
+| `image-search`           | Search movies using an image as the query        |
+ 

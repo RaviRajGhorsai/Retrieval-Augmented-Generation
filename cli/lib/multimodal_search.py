@@ -64,6 +64,6 @@ def image_search_command(image_path):
 
     result = ms.search_with_image(image_path)
 
-    for res in result:
-        print(f"{res["title"]} (similarity: {res["similarity"]})\n{res["description"][:100]}")
+    for idx, res in enumerate(result):
+        print(f"{idx}. {res["title"]} (similarity: {res["similarity"]})\n{res["description"][:100]}\n\n")
 
